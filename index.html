@@ -269,11 +269,14 @@ label.f{display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--muted);m
    Selama apiKey dikosongkan, aplikasi berjalan dalam MODE LOKAL (tanpa sinkronisasi).
    ===================================================================== */
 var FIREBASE_CONFIG = {
-  apiKey: '',
-  authDomain: '',
-  databaseURL: '',   // contoh: https://nama-proyek-default-rtdb.asia-southeast1.firebasedatabase.app
-  projectId: '',
-  appId: ''
+  apiKey: "AIzaSyBqd6Rx0kB_C8ut7_3xnVFiE4z4EH72otQ",
+  authDomain: "tongkronganoke.firebaseapp.com",
+  databaseURL: "https://tongkronganoke-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tongkronganoke",
+  storageBucket: "tongkronganoke.firebasestorage.app",
+  messagingSenderId: "1034291349863",
+  appId: "1:1034291349863:web:57bcdf4661f6bc342307c2",
+  measurementId: "G-7QC0C8BRT9"
 };
 /* Kode toko = alamat rahasia data Anda di server. Harus SAMA di semua perangkat
    dan minimal 12 karakter. Jangan dibagikan ke orang lain. */
@@ -329,10 +332,9 @@ function pw(u,p){return hash('kasirbiru|'+String(u).toLowerCase()+'|'+p)}
 /* ---------- data awal: MENU KOSONG ---------- */
 function rcDef(){return {addr:'',tel:'',foot:'Terima kasih atas kunjungan Anda',paper:'58',auto:false}}
 async function seed(){
-  return {v:1,shop:'Tongkrongan OK',seq:0,menu:[],orders:[],expenses:[],receipt:rcDef(),showHint:true,
-    users:[{id:'u1',username:'pemilik',name:'Pemilik',role:'owner',pw:await pw('pemilik','1234')},
-           {id:'u2',username:'kasir',name:'Kasir 1',role:'staff',pw:await pw('kasir','1234')}]};
+  return {v:1,shop:'Tongkrongan OK',seq:0,menu:[],orders:[],expenses:[],receipt:rcDef(),showHint:false,users:[]};
 }
+function hasOwner(){return !!D&&D.users.some(function(u){return u.role==='owner'})}
 function validData(d){return d&&Array.isArray(d.users)&&Array.isArray(d.menu)&&Array.isArray(d.orders)&&d.users.some(function(u){return u.role==='owner'})}
 function fix(d){if(d.shop==='Kasir Biru')d.shop='Tongkrongan OK';d.expenses=d.expenses||[];d.receipt=Object.assign(rcDef(),d.receipt||{});d.seq=d.seq||0;return d}
 function load(){try{var r=lsGet(KEY);if(r){var d=JSON.parse(r);if(validData(d))return fix(d)}}catch(e){}return null}
@@ -376,15 +378,28 @@ function loginHTML(){
     '<p>Catat pesanan, status pembayaran, pengeluaran, dan keuangan dalam satu aplikasi kasir.</p></section>'+
     '<section class="auth-card"><div><h2>Masuk</h2><p class="muted" style="margin-top:4px">Gunakan akun pemilik atau karyawan kasir.</p></div>'+
     '<form data-form="login" autocomplete="off">'+
-      '<label class="f" for="lu">Nama pengguna<input class="inp" id="lu" name="u" autocapitalize="none" autocomplete="username" required></label>'+
+      '<label class="f" for="lu">Email atau nama pengguna<input class="inp" id="lu" name="u" autocapitalize="none" autocomplete="username" required></label>'+
       '<label class="f" for="lp">Sandi<span class="pwrow"><input class="inp" id="lp" name="p" type="password" autocomplete="current-password" required><button type="button" class="pwt" data-act="showpw">Lihat</button></span></label>'+
       '<div class="err" id="lerr" role="alert">'+esc(S.loginErr)+'</div>'+
       '<button class="btn big" type="submit">Masuk</button></form>'+
     (D.showHint?'<p class="hint">Akun awal: <b>pemilik</b> / 1234 dan <b>kasir</b> / 1234. Ganti sandi setelah masuk (menu Pengaturan).</p>':'')+
     '</section></div>';
 }
+function setupHTML(){
+  return '<div class="auth"><section class="auth-hero"><span class="logo lg">'+logoImg()+'</span><h1>Tongkrongan OK</h1>'+
+    '<p>Selamat datang. Buat akun pemilik dulu agar data usaha Anda aman dan bisa dibuka dari perangkat lain.</p></section>'+
+    '<section class="auth-card"><div><h2>Buat akun pemilik</h2><p class="muted" style="margin-top:4px">Email dan sandi ini dipakai untuk masuk di semua perangkat.</p></div>'+
+    '<form data-form="setup" autocomplete="off">'+
+      '<label class="f" for="sn">Nama usaha<input class="inp" id="sn" name="shop" value="Tongkrongan OK" required></label>'+
+      '<label class="f" for="se">Email pemilik<input class="inp" id="se" name="email" type="email" autocapitalize="none" autocomplete="username" placeholder="nama@email.com" required></label>'+
+      '<label class="f" for="s1">Sandi (minimal 6 karakter)<span class="pwrow"><input class="inp" id="s1" name="p1" type="password" autocomplete="new-password" required><button type="button" class="pwt" data-act="showpw">Lihat</button></span></label>'+
+      '<label class="f" for="s2">Ulangi sandi<input class="inp" id="s2" name="p2" type="password" autocomplete="new-password" required></label>'+
+      '<div class="err" id="serr" role="alert"></div>'+
+      '<button class="btn big" type="submit">Buat akun &amp; mulai</button></form>'+
+    '<p class="hint">Catat email dan sandi ini. Akun karyawan kasir dibuat nanti di menu Pengaturan.</p></section></div>';
+}
 function render(){
-  if(!me){$('app').innerHTML=loginHTML();updateDock();return}
+  if(!me){$('app').innerHTML=hasOwner()?loginHTML():setupHTML();updateDock();return}
   if(allowed().indexOf(S.view)<0)S.view='kasir';
   var tabs=isOwner()?[['kasir','Kasir'],['pesanan','Pesanan'],['menu','Menu'],['pengeluaran','Pengeluaran'],['keuangan','Keuangan'],['pengaturan','Pengaturan']]:[['kasir','Kasir'],['pesanan','Pesanan'],['pengaturan','Akun']];
   $('app').innerHTML='<header class="top"><div class="brandrow"><span class="logo">'+logoImg()+'</span><div><div class="brand">'+esc(D.shop)+'</div><div class="clock"><span id="clock"></span><span class="sync" id="sync"></span></div></div></div>'+
@@ -744,9 +759,10 @@ function viewKeuangan(){
 
 /* ---------- pengaturan ---------- */
 function viewPengaturan(){
-  var mine='<div class="panel stack"><h3>Akun saya</h3><p class="hint">Nama pengguna: <b>'+esc(me.username)+'</b></p><form class="stack" data-form="myname" autocomplete="off"><label class="f">Nama tampilan<input class="inp" name="name" value="'+esc(me.name)+'" required></label><button class="btn" type="submit">Simpan nama</button></form>'+msg('myname')+'</div>'+
+  var mine='<div class="panel stack"><h3>Akun saya</h3><p class="hint">Masuk sebagai: <b>'+esc(me.username)+'</b></p><form class="stack" data-form="myname" autocomplete="off"><label class="f">Nama tampilan<input class="inp" name="name" value="'+esc(me.name)+'" required></label><button class="btn" type="submit">Simpan nama</button></form>'+msg('myname')+'</div>'+
     '<div class="panel stack"><h3>Ganti sandi saya</h3><form class="stack" data-form="mypw" autocomplete="off"><label class="f">Sandi sekarang<input class="inp" name="cur" type="password" autocomplete="current-password" required></label>'+
     '<label class="f">Sandi baru (minimal 4 karakter)<input class="inp" name="n1" type="password" autocomplete="new-password" required></label><label class="f">Ulangi sandi baru<input class="inp" name="n2" type="password" autocomplete="new-password" required></label><button class="btn" type="submit">Simpan sandi</button></form>'+msg('mypw')+'</div>';
+  if(isOwner())mine+='<div class="panel stack"><h3>Email login</h3><p class="hint">Dipakai untuk masuk. Isi sandi sekarang untuk mengonfirmasi.</p><form class="stack" data-form="myuser" autocomplete="off"><label class="f">Email baru<input class="inp" name="email" type="email" autocapitalize="none" value="'+esc(me.username)+'" required></label><label class="f">Sandi sekarang<input class="inp" name="cur" type="password" autocomplete="current-password" required></label><button class="btn" type="submit">Simpan email</button></form>'+msg('myuser')+'</div>';
   if(!isOwner())return '<div class="two-col">'+mine+'</div>';
   var staff=D.users.filter(function(u){return u.role==='staff'});
   var rows=staff.map(function(u){
@@ -856,10 +872,29 @@ document.addEventListener('submit',async function(e){
     var un=String(fd.get('u')||'').trim().toLowerCase(),p=String(fd.get('p')||'');
     var u=D.users.filter(function(x){return x.username.toLowerCase()===un})[0];
     if(u&&u.pw===await pw(u.username,p)){me=u;lsSet(SKEY,u.id);S.loginErr='';S.view='kasir';render()}
-    else{S.loginErr='Nama pengguna atau sandi salah.';$('lerr').textContent=S.loginErr}
+    else{S.loginErr='Email/nama pengguna atau sandi salah.';$('lerr').textContent=S.loginErr}
     return;
   }
+  if(kind==='setup'){
+    if(hasOwner()){render();return}
+    var sh=String(fd.get('shop')||'').trim()||'Tongkrongan OK',em=String(fd.get('email')||'').trim().toLowerCase(),p1=String(fd.get('p1')||''),p2=String(fd.get('p2')||''),er=$('serr');
+    var se=!/^\S+@\S+\.\S+$/.test(em)?'Masukkan email yang benar.':p1.length<6?'Sandi minimal 6 karakter.':p1!==p2?'Ulangi sandi dengan benar.':'';
+    if(se){er.textContent=se;return}
+    var ph=await pw(em,p1);
+    if(hasOwner()){render();return}
+    var ou={id:'u'+uid(),username:em,name:'Pemilik',role:'owner',pw:ph};
+    D.users=[ou];D.shop=sh;D.showHint=false;
+    me=ou;lsSet(SKEY,ou.id);S.view='kasir';save();render();return;
+  }
   if(!me)return;
+  if(kind==='myuser'){
+    var ne=String(fd.get('email')||'').trim().toLowerCase(),cp=String(fd.get('cur')||'');
+    if(!ne||/\s/.test(ne))S.msg.myuser={t:'Isi email atau nama pengguna tanpa spasi.',ok:false};
+    else if(me.pw!==await pw(me.username,cp))S.msg.myuser={t:'Sandi sekarang salah.',ok:false};
+    else if(D.users.some(function(x){return x.id!==me.id&&x.username.toLowerCase()===ne}))S.msg.myuser={t:'Email/nama pengguna itu sudah dipakai akun lain.',ok:false};
+    else{me.username=ne;me.pw=await pw(ne,cp);save();S.msg.myuser={t:'Email login diganti. Gunakan yang baru saat masuk.',ok:true}}
+    render();return;
+  }
   if(kind==='custom'){
     var name=String(fd.get('name')||'').trim(),price=parsePrice(fd.get('price')),qty=parsePrice(fd.get('qty'));
     if(!name||price<=0||qty<1){toast('Isi nama, harga, dan jumlah dengan benar.');return}
@@ -972,7 +1007,7 @@ function cloudWrite(up){
   });
 }
 function cloudPush(){
-  if(!D)return;
+  if(!D||!hasOwner())return;
   if(!cloud.first&&!cloud.hasBase)return;
   var cur=snapState(D),rem=cloud.rem||emptyState(),up={};
   if(cur.meta!==rem.meta)up.meta=clean(metaOf(D));
@@ -1013,7 +1048,7 @@ function onRemote(snap){
   var v=snap.val(),firstTime=!cloud.first;
   var nd=(v&&v.meta)?fix(fromRemote(v)):null;
   if(!nd||!validData(nd)){
-    if(firstTime){cloud.first=true;cloud.empty=true;cloud.rem=emptyState();firstResolve();if(cloud.booted&&D)pushAll()}
+    if(firstTime){cloud.first=true;cloud.empty=true;cloud.rem=emptyState();firstResolve();if(cloud.booted&&hasOwner())pushAll()}
     syncStatus();return;
   }
   var had=D,changed=!had||!sameState(snapState(had),snapState(nd));
@@ -1082,7 +1117,7 @@ function bootHTML(){return '<div class="boot"><span class="logo">'+logoImg()+'</
     if(!cloud.first&&!cloud.failed){cloud.err='Server belum merespons. Memakai data di perangkat ini.';toast(cloud.err)}
   }
   if(!D)D=await seed();
-  if(CLOUD_ON&&cloud.root&&cloud.first&&cloud.empty){cloud.empty=false;pushAll()}
+  if(CLOUD_ON&&cloud.root&&cloud.first&&cloud.empty&&hasOwner()){cloud.empty=false;pushAll()}
   save();
   cloud.booted=true;
   var sn=lsGet(SKEY);
