@@ -268,15 +268,12 @@ label.f{display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--muted);m
    > General > Your apps > Web app > "SDK setup and configuration" > Config.
    Selama apiKey dikosongkan, aplikasi berjalan dalam MODE LOKAL (tanpa sinkronisasi).
    ===================================================================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyBqd6Rx0kB_C8ut7_3xnVFiE4z4EH72otQ",
-  authDomain: "tongkronganoke.firebaseapp.com",
-  databaseURL: "https://tongkronganoke-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "tongkronganoke",
-  storageBucket: "tongkronganoke.firebasestorage.app",
-  messagingSenderId: "1034291349863",
-  appId: "1:1034291349863:web:57bcdf4661f6bc342307c2",
-  measurementId: "G-7QC0C8BRT9"
+var FIREBASE_CONFIG = {
+  apiKey: '',
+  authDomain: '',
+  databaseURL: '',   // contoh: https://nama-proyek-default-rtdb.asia-southeast1.firebasedatabase.app
+  projectId: '',
+  appId: ''
 };
 /* Kode toko = alamat rahasia data Anda di server. Harus SAMA di semua perangkat
    dan minimal 12 karakter. Jangan dibagikan ke orang lain. */
