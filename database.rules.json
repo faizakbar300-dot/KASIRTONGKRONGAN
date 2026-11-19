@@ -1,0 +1,28 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "toko": {
+      "$shopId": {
+        ".read": "auth != null && $shopId.length >= 12",
+        ".write": "auth != null && $shopId.length >= 12",
+        "meta": {
+          ".validate": "newData.hasChildren(['shop', 'seq'])"
+        },
+        "users": {
+          "$id": { ".validate": "newData.hasChildren(['username', 'name', 'role', 'pw'])" }
+        },
+        "menu": {
+          "$id": { ".validate": "newData.hasChildren(['name', 'price'])" }
+        },
+        "orders": {
+          "$id": { ".validate": "newData.hasChildren(['no', 'ts', 'items', 'pay'])" }
+        },
+        "expenses": {
+          "$id": { ".validate": "newData.hasChildren(['name', 'amount', 'ts'])" }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
